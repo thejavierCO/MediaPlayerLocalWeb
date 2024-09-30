@@ -1,24 +1,3 @@
-(function (a) {
-	document.addEventListener("DOMContentLoaded", function () {
-		MP = document.getElementById('Mp');
-		coverimg = document.getElementById("picture")
-		fileload = 0;
-		canvast = document.getElementsByTagName('canvas');
-		if (Mp) {
-			DetMp();
-			loadXMLDoc()
-			coverimg.addEventListener("load", function (a) {
-				colortest(a.path);
-			})
-
-		} else {
-			console.log(false)
-		}
-		//infobox()
-
-	});
-})();
-
 
 function DetMp() {
 	Mp.controls = false;
@@ -78,60 +57,9 @@ function testtest(a) {
 	x = document.getElementById('numerfile');
 	x.innerHTML = '(' + playlist.length + ')';
 }
-//---------------------------------------------------
-function pld() {
-	t = document.getElementById('title')//.textContent = "";
-	ar = document.getElementById('artist')//.textContent = "";
-	al = document.getElementById('album')//.textContent = "";
-	file = playlist[0];
-	pl = playlist[fileload];
 
-	if (fileload < playlist.length) {
-		fileload++
-		Mp.src = playlist[fileload]
-		t.textContent = pltitle[fileload];
-		ar.textContent = plartist[fileload];
-		al.textContent = plalbum[fileload];
-		document.getElementById('picture').setAttribute('src', plcover[fileload]);
-		coverfondo(plcover[fileload]);
-		Id3s("l", pl, "Mp")
-		if (fileload == playlist.length) {
-			console.log("ok")
-		}
-	} else {
-		fileload = 0
-		Mp.src = playlist[fileload]
-		t.textContent = pltitle[fileload];
-		ar.textContent = plartist[fileload];
-		al.textContent = plalbum[fileload];
-		document.getElementById('picture').setAttribute('src', plcover[fileload]);
-		coverfondo(plcover[fileload]);
-		Id3s("l", pl, "Mp")
-	}
-}
-playlist = []
-plalbum = []
-plcover = []
-pltitle = []
-plartist = []
 //-------------------------------------------------
-function TimeMp() {
-	Mp.ontimeupdate = function () {
-		var p = document.getElementById("test2");
-		var p1 = document.getElementById("test1");
-		s123(p, Mp.currentTime);
-		s123(p1, Mp.duration);
-	};
-}
-function s123(p, time) {
-	hors = Math.floor(time / 3600);
-	min = Math.floor((time % 3600) / 60);
-	seg = Math.floor(time % 60);
-	min = min < 10 ? '0' + min : min;
-	seg = seg < 10 ? '0' + seg : seg;
-	p.innerHTML = min + ":" + seg;
-	bar();
-}
+
 function bar() {
 	test = document.getElementById("linea");
 	s1 = Mp.currentTime;
@@ -164,58 +92,8 @@ function showTags(url) {
 	}
 }
 //--------------------------------------------------------------------
-function Id3s(Type, File, player) {
-	if (Type) {
-		if (File) {
-			if (Type == "D") {
-				console.log("on type")
-				if (File) {
-					console.log("on file")
-				}
-				if (player) {
-					console.log("on player");
-				}
-			} else {
-				if (Type == "s") {
-					console.log("is server file")
-					ID3.loadTags(File, function () {
-						showTags(File);
-					}, {
-						tags: ["title", "artist", "album", "picture"]
-					});
-				}
-				if (Type == "l") {
-					var file1 = File.files[0], url = file1.urn || file1.name;
-					ID3.loadTags(url, function () {
-						showTags(url);
-					}, {
-						tags: ["title", "artist", "album", "picture"],
-						dataReader: ID3.FileAPIReader(file1)
-					});
-					if (player) {
-						var archiver = File
-						var reader = new FileReader();
-						reader.onload = function () {
-							var dataURL = reader.result;
-							var oninput = document.getElementById(player);
-							oninput.src = dataURL;
-						}
-						reader.readAsDataURL(archiver.files[0]);
-					}
-				}
 
-			}
-		} else {
-			console.error("is file not exist")
-		}
-	} else {
-		console.error("you need info")
-	}
-}
-function Mpinfo(player) {
-	tag = document.getElementById(player).src;
-	Id3s("s", tag, player);
-}
+
 function colortest(t) {
 	var colorThief = new ColorThief();
 	var a = colorThief.getColor(t[0]);
@@ -238,43 +116,3 @@ function boxcontentload(a) {
 	cover.innerHTML += '<span>' + pltitle[a] + '</span>' + '<br>';
 }
 //-----------------------------------------------------------------------
-function Mptest(state) {
-	if (state == "P") {
-		Mp.play();
-	}
-	if (state == "p") {
-		Mp.pause()
-	}
-	if (state == "loop") {
-		Mp.loop = true;
-	}
-}
-async function loadXMLDoc() {
-	let data = await fetch("./test.json").then(e => e.json())
-	test(data)
-	// var xhttp = new XMLHttpRequest();
-	// xhttp.onreadystatechange = function () {
-	// 	if (this.readyState == 4 && this.status == 200) {
-	// 		data = JSON.parse(this.response);
-	// 		test(data);
-	// 	}
-	// }
-	// xhttp.open("GET", "../test.json", true);
-	// xhttp.send();
-}
-function test(a) {
-	if (a["ok"]["Mp"]["File"]) {
-		Id3s("s", a["ok"]["Mp"]["File"]);
-		Mp.src = a["ok"]["Mp"]["File"];
-	}
-	if (a["ok"]["Mp"]["state"] == "pause") {
-		Mptest("p")
-	}
-	if (a["ok"]["Mp"]["state"] == "playing") {
-		Mptest("P")
-	}
-	if (a["ok"]["Mp"]["replaying"] == "on") {
-		Mptest("loop")
-	}
-	console.log(a["ok"]["Mp"])
-}

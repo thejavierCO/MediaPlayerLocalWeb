@@ -5,43 +5,14 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>player</title>
-	<script src="./src/js/Mp.js"></script>
-	<script src="./src/js/id3.js"></script>
-	<script src="./src/js/color-thief.js"></script>
+	<script src="./src/Extensions/id3.js"></script>
+	<script src="./src/Extensions/color-thief.js"></script>
+	<script src="./src/MPlayer/index.js"></script>
 	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<box>
-		<div id="fondo"></div>
-		<boxc id="contentmp3">
-			<cover id="imgcover">
-				<h3>playlist</h3><br>
-			</cover>
-		</boxc>
-		<pl id="playlist">
-			<input type="file" name="file" id="file" class="inputfile" onchange="ptest(this)" />
-			<label for="file">file in playlist local <span id="numerfile"></span></label><br><br><input type="file"
-				name="test" id="testfile" onchange="Id3s('l',this,'Mp')"><label for="testfile">ok</label>
-		</pl>
-		<audio id="Mp" src="./Media/1.mp3" controls></audio>
-		<Mp id="player">
-			<content>
-				<img id="picture" src="" width="100%" alt="ID3" />
-				<center>
-					<info id="title"></info> / <info id="album"></info><br>
-					<info id="artist"></info><br>
-				</center>
-				<textd id="test2"></textd>
-				<textd id="test1"></textd><br>
-			</content>
-			<bar id="bar">
-				<linea id="linea"></linea>
-			</bar>
-			<button onclick="btp();">the</button>
-			<button onclick="pld();">pl</button>
-		</Mp>
-	</box>
+	<audio id="Mp" src="./Media/1.mp3" controls></audio>
 </body>
 
 </html>
