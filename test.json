@@ -1,0 +1,15 @@
+{
+  "ok": {
+    "Mp": {
+      "state": "playng",
+      "replaying": "on",
+      "File": "./Media/1.mp3",
+      "info": {
+        "title": "test",
+        "album": "test",
+        "artist": "test",
+        "cover": "test"
+      }
+    }
+  }
+}
