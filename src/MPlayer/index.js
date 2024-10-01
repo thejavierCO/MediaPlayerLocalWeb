@@ -15,6 +15,7 @@ class MPlayer extends EventTarget {
     return this.tag.src;
   }
   set src(data) {
+    this.emit("updateSrc", { data })
     this.tag.src = data;
   }
   get duration() {
@@ -41,6 +42,9 @@ class MPlayer extends EventTarget {
   switchPlayAndPause() {
     if (this.status != "playing") this.play();
     else this.pause();
+  }
+  loop() {
+    this.tag.loop = true;
   }
   play() {
     this.emit("play")
