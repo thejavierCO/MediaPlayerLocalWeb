@@ -63,3 +63,15 @@ class MPlayer extends EventTarget {
     else this.dispatchEvent(new CustomEvent(type, { detail: data }))
   }
 }
+
+class Player_mediaData extends MPlayer {
+  constructor(tag) {
+    super(tag);
+    this.ID3 = () => new Promise((res, req) => {
+      jsmediatags.read(this.src, {
+        onSuccess: res,
+        onError: req
+      })
+    })
+  }
+}
