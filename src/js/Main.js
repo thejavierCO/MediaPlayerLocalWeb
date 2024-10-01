@@ -1,5 +1,22 @@
+let $ = a => document.querySelector(a);
+let $$ = a => document.querySelectorAll(a);
+
 document.addEventListener("DOMContentLoaded", function () {
-	const Player = new MPlayer("audio#MP");
+	let Player = new MPlayer("audio#MP");
+	let src = $("span[src]")
+	let status = $("span[status]")
+	let btn = $("button[btnCtl]")
+	btn.onclick = () => Player.switchPlayAndPause();
+	Player.on("currentTime", ({ detail: a }) => {
+		let total = $("span[total]")
+		let posicion = $("span[posicion]")
+		total.innerText = a.total;
+		posicion.innerText = a.posicion;
+	})
+	src.innerText = Player.src;
+	Player.on("status", ({ detail }) => {
+		status.innerText = detail.status;
+	})
 });
 // function Mplayer() {
 // 	MP.ontimeupdate = function(){text(MP)}
