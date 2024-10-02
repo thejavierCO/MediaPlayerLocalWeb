@@ -9,8 +9,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 	$("span[album]").innerText = album;
 	$("span[artist]").innerText = artist;
 	$("img[picture]").src = picture;
-	$("div.barBg").onclick = ({ offsetX, target: { offsetWidth } }) => {
-		const Porcentaje = offsetX * 100 / offsetWidth;
+	$("div.barBg").onclick = ({ offsetX: posicion }) => {
+		const { clientWidth: width } = $("div.barBg")
+		const Porcentaje = posicion * 100 / width;
 		const PosicionOut = Porcentaje * Player.duration / 100;
 		Player.posicion = PosicionOut
 	}
@@ -22,5 +23,31 @@ document.addEventListener("DOMContentLoaded", async function () {
 		let Posicion = new timeFormat(Player.posicion * 1000);
 		$("span[posicion]").innerText = Posicion.Hours + ":" + Posicion.Minutes + ":" + Posicion.Seconds;
 	})
+
+	Player.on("updateSrc", async ({ detail: { data } }) => {
+		let { title, album, artist, picture } = Player.getDataFile();
+		$("span[title]").innerText = title;
+		$("span[album]").innerText = album;
+		$("span[artist]").innerText = artist;
+		$("img[picture]").src = picture;
+		$("div.barBg").onclick = ({ offsetX: posicion }) => {
+			const { clientWidth: width } = $("div.barBg")
+			const Porcentaje = posicion * 100 / width;
+			const PosicionOut = Porcentaje * Player.duration / 100;
+			Player.posicion = PosicionOut
+		}
+	})
 	$("button[btnCtl]").onclick = () => Player.switchPlayAndPause()
+
+	$("input#audioFile").onchange = ({ srcElement: { files } }) => {
+		let reader = new FileReader();
+		reader.onload = async function () {
+			let blob = new Blob([reader.result], { type: files[0].type })
+			let url = URL.createObjectURL(blob)
+			Player.src = url;
+			await Player.getID3(files[0])
+		}
+		reader.readAsArrayBuffer(files[0]);
+	}
 });
+

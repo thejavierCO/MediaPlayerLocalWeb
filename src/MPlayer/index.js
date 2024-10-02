@@ -91,8 +91,8 @@ class MPlayer extends EventTarget {
 class Player_mediaData extends MPlayer {
   constructor(tag) {
     super(tag);
-    this.getID3 = () => new Promise((res, req) => {
-      jsmediatags.read(this.src, {
+    this.getID3 = (url) => new Promise((res, req) => {
+      jsmediatags.read(url || this.src, {
         onSuccess: (tag) => {
           this.ID3 = tag;
           res(this);

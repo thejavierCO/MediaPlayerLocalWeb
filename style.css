@@ -10,7 +10,7 @@ div.box{
 	color:white;
 	background-color: black;
 	width: 400px;
-	height: 500px;
+	height: 550px;
 	overflow: auto;
 	border: 1px solid #fff;
 }
@@ -35,4 +35,16 @@ div.barbg > div.barProgress{
 	width: 0%;
 	height: 100%;
 	background-color: #171717;
+}
+
+div.audioData{
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+}
+div.audioTime{
+	display: grid;
+	grid-template-columns: auto auto;
+	width: 100%;
+	text-align: center;
 }
