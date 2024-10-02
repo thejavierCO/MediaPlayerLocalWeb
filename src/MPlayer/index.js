@@ -1,4 +1,4 @@
-export class timeFormat {
+class timeFormat {
   constructor(TimeMillis) {
     this._current_time = TimeMillis;
   }
