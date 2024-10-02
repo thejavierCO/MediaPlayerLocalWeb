@@ -154,8 +154,8 @@ class MPlayer extends EventTarget {
 class Player_mediaData extends MPlayer {
   constructor(tag) {
     super(tag);
-    this.autoInsertInfo = false;
     this.getID3 = (url) => new Promise((res, req) => {
+      if (!this.src) throw "not defined source"
       jsmediatags.read(url || this.src, {
         onSuccess: (tag) => {
           this.ID3 = tag;
@@ -167,11 +167,12 @@ class Player_mediaData extends MPlayer {
     })
     this.insertLocalFile = (File) => new Promise((res, req) => {
       let reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         let { type } = File;
         let blob = new Blob([reader.result], { type })
         let url = URL.createObjectURL(blob)
         this.src = url;
+        if (this.autoGetInfo) await this.getID3(blob)
         res(() => URL.revokeObjectURL(url))
       }
       reader.onerror = req;
@@ -186,6 +187,11 @@ class Player_mediaData extends MPlayer {
         if (btn.innerText != text) btn.innerText = this.status == "playing" ? "Pause" : "Play";
       }
     });
+  }
+  autoGetID3() {
+    this.autoGetInfo = true;
+    if (this.src) this.getID3()
+    return this;
   }
   autoInsertData() {
     this.autoInsertInfo = true;
