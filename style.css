@@ -48,3 +48,7 @@ div.audioTime{
 	width: 100%;
 	text-align: center;
 }
+
+Label[for="audioFile"]{
+	color:#fff;
+}
