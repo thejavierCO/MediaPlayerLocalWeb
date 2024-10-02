@@ -22,6 +22,41 @@ class timeFormat {
   }
 }
 
+class Barra extends EventTarget {
+  tagBg(query) {
+    this.bg = document.querySelector(query)
+    this.bg.addEventListener("click", ({ offsetX }) => {
+      this.progress.style.width = offsetX;
+      this.emit("updatePosicion", { max: this.max, posicion: this.posicion })
+    })
+    return this.bg
+  }
+  tagProgress(query) {
+    this.progress = document.querySelector(query)
+    return this.progress
+  }
+  get max() {
+    return this.bg.clientWidth;
+  }
+  get posicion() {
+    return this.progress.clientWidth;
+  }
+  set posicion(data) {
+    this.progress.style.width = data;
+  }
+  setPosicionForPercentage(posicion) {
+    this.posicion = posicion * this.max / 100;
+  }
+  on(type, fns) {
+    this.addEventListener(type, fns);
+    return () => this.removeEventListener(type, fns);
+  }
+  emit(type, data) {
+    if (!data) this.dispatchEvent(new Event(type))
+    else this.dispatchEvent(new CustomEvent(type, { detail: data }))
+  }
+}
+
 class MPlayer extends EventTarget {
   constructor(query) {
     super();
