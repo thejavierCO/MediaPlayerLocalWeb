@@ -6,16 +6,16 @@ class timeFormat {
     return this._current_time
   }
   get Hours() {
-    return new String(Math.trunc(this.current / 1000 / 60 / 60) % 60).padStart(2, "0")
+    return new String(Math.trunc(this.current / 1000 / 60 / 60) % 60 || 0).padStart(2, "0")
   }
   get Minutes() {
-    return new String(Math.trunc(this.current / 1000 / 60) % 60).padStart(2, "0")
+    return new String(Math.trunc(this.current / 1000 / 60) % 60 || 0).padStart(2, "0")
   }
   get Seconds() {
-    return new String(Math.trunc(this.current / 1000) % 60).padStart(2, "0")
+    return new String(Math.trunc(this.current / 1000) % 60 || 0).padStart(2, "0")
   }
   get Miliseconds() {
-    return new String(Math.trunc(this.current)).padEnd(4, "0")
+    return new String(Math.trunc(this.current) || 0).padEnd(4, "0")
   }
   useRange(max) {
     return Number(parseFloat(((this.current * 1) / (max * 1000)).toString()).toFixed(3))
@@ -100,6 +100,18 @@ class Player_mediaData extends MPlayer {
         onError: req
       })
     })
+    this.insertLocalFile = (File) => new Promise((res, req) => {
+      let reader = new FileReader();
+      reader.onload = () => {
+        let { type } = File;
+        let blob = new Blob([reader.result], { type })
+        let url = URL.createObjectURL(blob)
+        this.src = url;
+        res(() => URL.revokeObjectURL(url))
+      }
+      reader.onerror = req;
+      reader.readAsArrayBuffer(File);
+    })
   }
   getDataFile() {
     if (!this.ID3) throw "not call getID3";
@@ -110,7 +122,7 @@ class Player_mediaData extends MPlayer {
         base64String += String.fromCharCode(image.data[i]);
       }
       var base64 = "data:" + image.format + ";base64," +
-        window.btoa(base64String);
+        btoa(base64String);
       this.ID3.tags.picture = base64;
     } else {
       this.ID3.tags.picture = "http://images.coveralia.com/audio/a/Amy_Winehouse-Back_To_Black_(Limited_Edition)-CD.jpg";
