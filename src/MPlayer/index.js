@@ -1,3 +1,5 @@
+let $ = a => document.querySelector(a);
+let $$ = a => document.querySelectorAll(a);
 class timeFormat {
   constructor(TimeMillis) {
     this._current_time = TimeMillis;
@@ -23,17 +25,22 @@ class timeFormat {
 }
 
 class Barra extends EventTarget {
+  constructor(bg, progress) {
+    super();
+    this.tagBg(bg)
+    this.tagProgress(progress)
+  }
   tagBg(query) {
-    this.bg = document.querySelector(query)
+    this.bg = $(query)
     this.bg.addEventListener("click", ({ offsetX }) => {
       this.progress.style.width = offsetX;
       this.emit("updatePosicion", { max: this.max, posicion: this.posicion })
     })
-    return this.bg
+    return this
   }
   tagProgress(query) {
-    this.progress = document.querySelector(query)
-    return this.progress
+    this.progress = $(query)
+    return this
   }
   get max() {
     return this.bg.clientWidth;
@@ -98,20 +105,40 @@ class MPlayer extends EventTarget {
   set autoplay(data) {
     this.tag.autoplay = data;
   }
+  useFormatTime() {
+    let Total = new timeFormat(this.duration * 1000);
+    let Posicion = new timeFormat(this.posicion * 1000);
+    return {
+      data: { Total, Posicion },
+      Total: Total.Hours + ":" + Total.Minutes + ":" + Total.Seconds,
+      Posicion: Posicion.Hours + ":" + Posicion.Minutes + ":" + Posicion.Seconds
+    }
+  }
   switchPlayAndPause() {
     if (this.status != "playing") this.play();
     else this.pause();
   }
+  autoplay() {
+    this.tag.autoplay = true;
+    return this;
+  }
+  muted() {
+    this.tag.muted = true;
+    return this;
+  }
   loop() {
     this.tag.loop = true;
+    return this;
   }
   play() {
     this.emit("play")
-    return this.tag.play();
+    this.tag.play();
+    return this;
   }
   pause() {
     this.emit("pause")
-    return this.tag.pause();
+    this.tag.pause();
+    return this;
   }
   on(type, fns) {
     this.addEventListener(type, fns);
@@ -120,16 +147,19 @@ class MPlayer extends EventTarget {
   emit(type, data) {
     if (!data) this.dispatchEvent(new Event(type))
     else this.dispatchEvent(new CustomEvent(type, { detail: data }))
+    return this;
   }
 }
 
 class Player_mediaData extends MPlayer {
   constructor(tag) {
     super(tag);
+    this.autoInsertInfo = false;
     this.getID3 = (url) => new Promise((res, req) => {
       jsmediatags.read(url || this.src, {
         onSuccess: (tag) => {
           this.ID3 = tag;
+          if (this.autoInsertInfo) this.autoInsert()
           res(this);
         },
         onError: req
@@ -147,6 +177,38 @@ class Player_mediaData extends MPlayer {
       reader.onerror = req;
       reader.readAsArrayBuffer(File);
     })
+    this.on("currentTime", () => {
+      if (this.autoInsertInfo) {
+        this.updateTime();
+        let btn = $("button[btnCtl]")
+        let text = this.status == "playing" ? "Pause" : "Play";
+        btn.onclick = () => this.switchPlayAndPause();
+        if (btn.innerText != text) btn.innerText = this.status == "playing" ? "Pause" : "Play";
+      }
+    });
+  }
+  autoInsertData() {
+    this.autoInsertInfo = true;
+    return this;
+  }
+  autoInsert() {
+    const { title, album, artist, picture } = this.getDataFile();
+    $$("[title]").forEach((tag) => tag.innerText = title);
+    $$("[album]").forEach((tag) => tag.innerText = album);
+    $$("[artist]").forEach((tag) => tag.innerText = artist);
+    $$("img[picture]").forEach((tag) => tag.src = picture);
+    this.updateTime();
+  }
+  updateTime() {
+    let { Total, Posicion } = this.useFormatTime()
+    $$("[Total_time]").forEach((tag) => {
+      let text = tag.innerText;
+      if (text != Total) tag.innerText = Total;
+    });
+    $$("[Posicion_time]").forEach((tag) => {
+      let text = tag.innerText;
+      if (text != Posicion) tag.innerText = Posicion
+    });
   }
   getDataFile() {
     if (!this.ID3) throw "not call getID3";
