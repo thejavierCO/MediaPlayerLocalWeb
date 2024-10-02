@@ -3,5 +3,6 @@ let $$ = a => document.querySelectorAll(a);
 
 document.addEventListener("DOMContentLoaded", async function () {
 	let Player = new Player_mediaData("audio#MP");
-	console.log(await Player.ID3())
+	await Player.getID3();
+	console.log(Player.getDataFile())
 });

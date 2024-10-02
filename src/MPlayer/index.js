@@ -1,3 +1,27 @@
+export class timeFormat {
+  constructor(TimeMillis) {
+    this._current_time = TimeMillis;
+  }
+  get current() {
+    return this._current_time
+  }
+  get Hours() {
+    return new String(Math.trunc(this.current / 1000 / 60 / 60) % 60).padStart(2, "0")
+  }
+  get Minutes() {
+    return new String(Math.trunc(this.current / 1000 / 60) % 60).padStart(2, "0")
+  }
+  get Seconds() {
+    return new String(Math.trunc(this.current / 1000) % 60).padStart(2, "0")
+  }
+  get Miliseconds() {
+    return new String(Math.trunc(this.current)).padEnd(4, "0")
+  }
+  useRange(max) {
+    return Number(parseFloat(((this.current * 1) / (max * 1000)).toString()).toFixed(3))
+  }
+}
+
 class MPlayer extends EventTarget {
   constructor(query) {
     super();
@@ -67,11 +91,30 @@ class MPlayer extends EventTarget {
 class Player_mediaData extends MPlayer {
   constructor(tag) {
     super(tag);
-    this.ID3 = () => new Promise((res, req) => {
+    this.getID3 = () => new Promise((res, req) => {
       jsmediatags.read(this.src, {
-        onSuccess: res,
+        onSuccess: (tag) => {
+          this.ID3 = tag;
+          res(this);
+        },
         onError: req
       })
     })
+  }
+  getDataFile() {
+    if (!this.ID3) throw "not call getID3";
+    const image = this.ID3.tags.picture;
+    if (image) {
+      var base64String = "";
+      for (var i = 0; i < image.data.length; i++) {
+        base64String += String.fromCharCode(image.data[i]);
+      }
+      var base64 = "data:" + image.format + ";base64," +
+        window.btoa(base64String);
+      this.ID3.tags.picture = base64;
+    } else {
+      this.ID3.tags.picture = "http://images.coveralia.com/audio/a/Amy_Winehouse-Back_To_Black_(Limited_Edition)-CD.jpg";
+    }
+    return this.ID3.tags
   }
 }
