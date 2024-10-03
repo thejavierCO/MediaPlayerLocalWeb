@@ -11,6 +11,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 	})
 	// update from local file
 	$("input#audioFile").onchange = ({ srcElement: { files: [file] } }) =>
-		Player.insertLocalFile(file).then(async clearUrl => Player.on("finished", _ => clearUrl()));
+		Player.insertLocalFile(file)
+			.then(async clearUrl => {
+				Player.on("finished", _ => clearUrl())
+				return Player.getColorsCover();
+			}).then(e => {
+				for (let index = 0; index < e.length; index++) {
+					if ($$("[useBgColor" + index + "]").length != 0) $$("[useBgColor" + index + "]").forEach(tag => tag.style.backgroundColor = e[index])
+					if ($$("[useColor" + index + "]").length != 0) $$("[useColor" + index + "]").forEach(tag => tag.style.color = e[index])
+				}
+			})
+
 });
 

@@ -64,6 +64,23 @@ class Barra extends EventTarget {
   }
 }
 
+class GetColorsCover {
+  constructor(tag) {
+    const colorThief = new ColorThief();
+    this.rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+      const hex = x.toString(16)
+      return hex.length === 1 ? '0' + hex : hex
+    }).join('');
+    this.Palette = new Promise((res, req) => {
+      if (tag.src == "") req("not defined source")
+      tag.addEventListener("load", () => {
+        let testing = colorThief.getPalette(tag, 8, 5);
+        res(testing.map(e => this.rgbToHex(e[0], e[1], e[2])))
+      })
+    })
+  }
+}
+
 class MPlayer extends EventTarget {
   constructor(query) {
     super();
@@ -187,6 +204,11 @@ class Player_mediaData extends MPlayer {
         if (btn.innerText != text) btn.innerText = this.status == "playing" ? "Pause" : "Play";
       }
     });
+  }
+  async getColorsCover() {
+    let data = $("img[targetGetColor]")
+    let colors = new GetColorsCover(data);
+    return await colors.Palette;
   }
   autoGetID3() {
     this.autoGetInfo = true;
