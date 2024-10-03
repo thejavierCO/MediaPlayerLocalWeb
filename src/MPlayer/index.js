@@ -187,6 +187,7 @@ class Player_mediaData extends MPlayer {
       reader.onload = async () => {
         let { type } = File;
         let blob = new Blob([reader.result], { type })
+        console.log(blob)
         let url = URL.createObjectURL(blob)
         this.src = url;
         if (this.autoGetInfo) await this.getID3(blob)
@@ -242,13 +243,12 @@ class Player_mediaData extends MPlayer {
     if (!this.ID3) throw "not call getID3";
     const image = this.ID3.tags.picture;
     if (image) {
-      var base64String = "";
-      for (var i = 0; i < image.data.length; i++) {
-        base64String += String.fromCharCode(image.data[i]);
-      }
-      var base64 = "data:" + image.format + ";base64," +
-        btoa(base64String);
-      this.ID3.tags.picture = base64;
+      let { format: type, data } = image;
+      console.log(image)
+      let blob = new Blob([data], { type })
+      console.log(blob)
+      let url = URL.createObjectURL(blob)
+      this.ID3.tags.picture = url;//base64;
     } else {
       this.ID3.tags.picture = "http://images.coveralia.com/audio/a/Amy_Winehouse-Back_To_Black_(Limited_Edition)-CD.jpg";
     }
