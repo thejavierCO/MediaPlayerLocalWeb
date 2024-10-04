@@ -225,7 +225,10 @@ class Player_mediaData extends MPlayer {
     $$("[title]").forEach((tag) => tag.innerText = title);
     $$("[album]").forEach((tag) => tag.innerText = album);
     $$("[artist]").forEach((tag) => tag.innerText = artist);
-    $$("img[picture]").forEach((tag) => tag.src = picture);
+    $$("img[picture]").forEach((tag) => {
+      tag.src = picture;
+      tag.addEventListener("load", _ => URL.revokeObjectURL(picture))
+    });
     this.updateTime();
   }
   updateTime() {
@@ -240,15 +243,35 @@ class Player_mediaData extends MPlayer {
     });
   }
   getDataFile() {
+    const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
+      const byteCharacters = atob(b64Data);
+      const byteArrays = [];
+      for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+      const blob = new Blob(byteArrays, { type: contentType });
+      return blob;
+    }
     if (!this.ID3) throw "not call getID3";
     const image = this.ID3.tags.picture;
     if (image) {
       let { format: type, data } = image;
-      console.log(image)
-      let blob = new Blob([data], { type })
-      console.log(blob)
+      // convert base64
+      let base64String = "";
+      for (var i = 0; i < data.length; i++) {
+        base64String += String.fromCharCode(data[i]);
+      }
+      //-----------------------------------------
+      let blob = b64toBlob(btoa(base64String), type)
       let url = URL.createObjectURL(blob)
-      this.ID3.tags.picture = url;//base64;
+      //------------------------------------------
+      this.ID3.tags.picture = url;
     } else {
       this.ID3.tags.picture = "http://images.coveralia.com/audio/a/Amy_Winehouse-Back_To_Black_(Limited_Edition)-CD.jpg";
     }
