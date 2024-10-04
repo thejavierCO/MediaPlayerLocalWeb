@@ -187,7 +187,6 @@ class Player_mediaData extends MPlayer {
       reader.onload = async () => {
         let { type } = File;
         let blob = new Blob([reader.result], { type })
-        console.log(blob)
         let url = URL.createObjectURL(blob)
         this.src = url;
         if (this.autoGetInfo) await this.getID3(blob)
