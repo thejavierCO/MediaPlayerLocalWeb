@@ -20,7 +20,7 @@ class timeFormat {
     return new String(Math.trunc(this.current) || 0).padEnd(4, "0")
   }
   useRange(max) {
-    return Number(parseFloat(((this.current * 1) / (max * 1000)).toString()).toFixed(3))
+    return Number(parseFloat(((this.current * 1) / (max * 1000) || 0).toString()).toFixed(3))
   }
 }
 
@@ -67,14 +67,16 @@ class Barra extends EventTarget {
 class GetColorsCover {
   constructor(tag) {
     const colorThief = new ColorThief();
+
     this.rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
       const hex = x.toString(16)
       return hex.length === 1 ? '0' + hex : hex
     }).join('');
+
     this.Palette = new Promise((res, req) => {
       if (tag.src == "") req("not defined source")
       tag.addEventListener("load", () => {
-        let testing = colorThief.getPalette(tag, 8, 5);
+        let testing = colorThief.getPalette(tag, 3, 10);
         res(testing.map(e => this.rgbToHex(e[0], e[1], e[2])))
       })
     })
