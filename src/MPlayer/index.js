@@ -36,7 +36,8 @@ class tagHtml {
     this.tag = query;
   }
   get tag() {
-    return $(this._tag);
+    if (typeof this._tag != "string") return this._tag;
+    else return $(this._tag);
   }
   set tag(query) {
     if (typeof query != "string") this._tag = query;
@@ -55,12 +56,15 @@ class tagHtml {
     }
   }
   getTagsAll(list) {
-    if (!list) throw "require array";
+    if (!list || !Array.isArray(list)) throw "require array";
     return list.map(query => {
       let result = [];
       $$(query).forEach(e => {
         result.push(new tagHtml(e))
-      })
+      });
+      result.innerTextAll = (text) => result.forEach(({ tag }) => {
+        if (tag.innerText != text) tag.innerText = text;
+      });
       return result;
     });
   }
@@ -237,25 +241,20 @@ class Player_mediaData extends MPlayer {
   autoInsert() {
     const [tagTitle, tagAlbum, tagArtist, tagPicture] = this.getTagsAll(["[title]", "[album]", "[artist]", "img[picture]"]);
     const { title, album, artist, picture } = this.getDataFile();
-    tagTitle.forEach((tag) => tag.innerText = title);
-    tagAlbum.forEach((tag) => tag.innerText = album);
-    tagArtist.forEach((tag) => tag.innerText = artist);
-    tagPicture.forEach((tag) => {
+    tagTitle.innerTextAll(title)
+    tagAlbum.innerTextAll(album)
+    tagArtist.innerTextAll(artist)
+    tagPicture.forEach(({ tag, on }) => {
       tag.src = picture;
-      tag.addEventListener("load", _ => URL.revokeObjectURL(picture))
+      on("load", _ => URL.revokeObjectURL(picture))
     });
     this.updateTime();
   }
   updateTime() {
+    const [tagTotal, tagPosicion] = this.getTagsAll(["[Total_time]", "[Posicion_time]"]);
     let { Total, Posicion } = this.useFormatTime()
-    $$("[Total_time]").forEach((tag) => {
-      let text = tag.innerText;
-      if (text != Total) tag.innerText = Total.structFormat(0);
-    });
-    $$("[Posicion_time]").forEach((tag) => {
-      let text = tag.innerText;
-      if (text != Posicion) tag.innerText = Posicion.structFormat(0)
-    });
+    tagTotal.innerTextAll(Total.structFormat(0))
+    tagPosicion.innerTextAll(Posicion.structFormat(0))
   }
   getDataFile() {
     const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
