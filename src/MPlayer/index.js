@@ -39,6 +39,7 @@ class tagHtml {
     return $(this._tag);
   }
   set tag(query) {
+    if (typeof query != "string") this._tag = query;
     this._tag = query;
   }
   get style() {
@@ -52,6 +53,16 @@ class tagHtml {
       if (!data) this.tag.dispatchEvent(new Event(type));
       else this.tag.dispatchEvent(new CustomEvent(type, { detail: data }))
     }
+  }
+  getTagsAll(list) {
+    if (!list) throw "require array";
+    return list.map(query => {
+      let result = [];
+      $$(query).forEach(e => {
+        result.push(new tagHtml(e))
+      })
+      return result;
+    });
   }
 }
 
@@ -224,11 +235,12 @@ class Player_mediaData extends MPlayer {
     return this;
   }
   autoInsert() {
+    const [tagTitle, tagAlbum, tagArtist, tagPicture] = this.getTagsAll(["[title]", "[album]", "[artist]", "img[picture]"]);
     const { title, album, artist, picture } = this.getDataFile();
-    $$("[title]").forEach((tag) => tag.innerText = title);
-    $$("[album]").forEach((tag) => tag.innerText = album);
-    $$("[artist]").forEach((tag) => tag.innerText = artist);
-    $$("img[picture]").forEach((tag) => {
+    tagTitle.forEach((tag) => tag.innerText = title);
+    tagAlbum.forEach((tag) => tag.innerText = album);
+    tagArtist.forEach((tag) => tag.innerText = artist);
+    tagPicture.forEach((tag) => {
       tag.src = picture;
       tag.addEventListener("load", _ => URL.revokeObjectURL(picture))
     });
