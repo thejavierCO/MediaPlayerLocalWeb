@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", async function () {
-	let Player = new Player_mediaData("audio#MP").autoInsertData().autoGetID3();
+	let Player = new Player_mediaData("audio#MP").autoInsertData().autoGetID3().autoplay();
 	let ProgressBar = new Barra("div.barBg", "div.barProgress");
-	ProgressBar.on("updatePosicion", ({ detail }) => {
-		const Porcentaje = detail.posicion * 100 / detail.max;
+	ProgressBar.updatePosicion((posicion, max) => {
+		const Porcentaje = posicion * 100 / max;
 		const PosicionOut = Porcentaje * Player.duration / 100;
 		Player.posicion = PosicionOut
 	})

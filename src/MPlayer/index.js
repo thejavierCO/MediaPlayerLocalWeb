@@ -22,76 +22,87 @@ class timeFormat {
   useRange(max) {
     return Number(parseFloat(((this.current * 1) / (max * 1000) || 0).toString()).toFixed(3))
   }
+  structFormat(type) {
+    let struct = [
+      (a) => a.Hours + ":" + a.Minutes + ":" + a.Seconds,
+      (a) => a.Minutes + ":" + a.Seconds,
+      (a) => a.Seconds
+    ];
+    return struct[type](this);
+  }
+}
+class tagHtml {
+  constructor(query) {
+    this.tag = query;
+  }
+  get tag() {
+    return $(this._tag);
+  }
+  set tag(query) {
+    this._tag = query;
+  }
+  get style() {
+    return this.tag.style;
+  }
+  get on() {
+    return (type, fns) => this.tag.addEventListener(type, fns);
+  }
+  get emit() {
+    return (type, data) => {
+      if (!data) this.tag.dispatchEvent(new Event(type));
+      else this.tag.dispatchEvent(new CustomEvent(type, { detail: data }))
+    }
+  }
 }
 
-class Barra extends EventTarget {
-  constructor(bg, progress) {
-    super();
-    this.tagBg(bg)
-    this.tagProgress(progress)
-  }
-  tagBg(query) {
-    this.bg = $(query)
-    this.bg.addEventListener("click", ({ offsetX }) => {
-      this.progress.style.width = offsetX;
-      this.emit("updatePosicion", { max: this.max, posicion: this.posicion })
-    })
-    return this
-  }
-  tagProgress(query) {
-    this.progress = $(query)
-    return this
+class Barra {
+  constructor(queryBg, queryProgress) {
+    this.tagBg = new tagHtml(queryBg);
+    this.tagProgress = new tagHtml(queryProgress);
+    this.tagBg.on("click", ({ offsetX }) => {
+      this.tagProgress.style.width = offsetX;
+    });
   }
   get max() {
-    return this.bg.clientWidth;
+    return this.tagBg.tag.clientWidth;
   }
   get posicion() {
-    return this.progress.clientWidth;
+    return this.tagProgress.tag.clientWidth;
   }
   set posicion(data) {
-    this.progress.style.width = data;
+    this.tagProgress.style.width = data;
   }
   setPosicionForPercentage(posicion) {
     this.posicion = posicion * this.max / 100;
   }
-  on(type, fns) {
-    this.addEventListener(type, fns);
-    return () => this.removeEventListener(type, fns);
-  }
-  emit(type, data) {
-    if (!data) this.dispatchEvent(new Event(type))
-    else this.dispatchEvent(new CustomEvent(type, { detail: data }))
+  updatePosicion(fns) {
+    this.tagBg.on("click", () => fns(this.posicion, this.max));
   }
 }
 
 class GetColorsCover {
   constructor(tag) {
-    const colorThief = new ColorThief();
-
+    this.colorThief = new ColorThief();
     this.rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
       const hex = x.toString(16)
       return hex.length === 1 ? '0' + hex : hex
     }).join('');
-
     this.Palette = new Promise((res, req) => {
-      if (tag.src == "") req("not defined source")
-      tag.addEventListener("load", () => {
-        let testing = colorThief.getPalette(tag, 3, 10);
-        res(testing.map(e => this.rgbToHex(e[0], e[1], e[2])))
-      })
+      if (tag.src == "") throw "not exist source";
+      tag.addEventListener("load", () =>
+        res((this.colorThief.getPalette(tag, 3, 10)).map(e => this.rgbToHex(e[0], e[1], e[2]))))
     })
   }
 }
 
-class MPlayer extends EventTarget {
+class MPlayer extends tagHtml {
   constructor(query) {
-    super();
-    this.tag = document.querySelector(query)
-    this.tag.addEventListener("timeupdate", _ => {
+    super(query);
+    this.on("timeupdate", _ => {
       this.emit("status", { status: this.status })
       this.emit("currentTime", { total: this.duration, posicion: this.posicion })
     });
-    this.tag.addEventListener("ended", () => {
+    this.on("ended", () => {
       this.emit("status", { status: "finished" })
       this.emit("finished")
     })
@@ -129,8 +140,8 @@ class MPlayer extends EventTarget {
     let Posicion = new timeFormat(this.posicion * 1000);
     return {
       data: { Total, Posicion },
-      Total: Total.Hours + ":" + Total.Minutes + ":" + Total.Seconds,
-      Posicion: Posicion.Hours + ":" + Posicion.Minutes + ":" + Posicion.Seconds
+      Total,
+      Posicion
     }
   }
   switchPlayAndPause() {
@@ -157,15 +168,6 @@ class MPlayer extends EventTarget {
   pause() {
     this.emit("pause")
     this.tag.pause();
-    return this;
-  }
-  on(type, fns) {
-    this.addEventListener(type, fns);
-    return () => this.removeEventListener(type, fns);
-  }
-  emit(type, data) {
-    if (!data) this.dispatchEvent(new Event(type))
-    else this.dispatchEvent(new CustomEvent(type, { detail: data }))
     return this;
   }
 }
@@ -236,11 +238,11 @@ class Player_mediaData extends MPlayer {
     let { Total, Posicion } = this.useFormatTime()
     $$("[Total_time]").forEach((tag) => {
       let text = tag.innerText;
-      if (text != Total) tag.innerText = Total;
+      if (text != Total) tag.innerText = Total.structFormat(0);
     });
     $$("[Posicion_time]").forEach((tag) => {
       let text = tag.innerText;
-      if (text != Posicion) tag.innerText = Posicion
+      if (text != Posicion) tag.innerText = Posicion.structFormat(0)
     });
   }
   getDataFile() {
